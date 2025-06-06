@@ -1,5 +1,6 @@
 from nicegui import ui
 import random
+import os
 
 # Liste de citations inspirantes
 citations = [
@@ -15,29 +16,60 @@ citations = [
 # Page principale
 @ui.page('/')
 def main_page():
-    ui.query('body').style('background: linear-gradient(to bottom, #fdfbfb, #ebedee); color: #333; font-family: "Helvetica Neue", sans-serif;')
+    # Style global du body (dégradé et typographie)
+    ui.query('body').style('''
+        background: linear-gradient(to bottom right, #f0f4f8, #d9e2ec);
+        color: #2f3e46;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+    ''')
 
-    with ui.column().classes('items-center justify-center min-h-screen'):
-        ui.label('🌿 Réflexion du jour').classes('text-4xl font-bold mb-4 text-green-700')
+    # Colonne centrée verticalement et horizontalement
+    with ui.column().classes('items-center justify-center min-h-screen px-4'):
+        # Titre principal
+        ui.label('🌿 Réflexion du jour').classes('text-5xl font-extrabold mb-6 text-green-800')
         
+        # Citation aléatoire
         citation = random.choice(citations)
-        ui.label(f'"{citation}"').classes('italic text-lg text-gray-600 mb-6 max-w-xl text-center')
+        ui.label(f'"{citation}"').classes(
+            'italic text-xl text-gray-600 mb-8 max-w-2xl text-center'
+        )
 
-        question = ui.textarea(label='✍️ Que veux-tu changer aujourd’hui ?', placeholder="Écris ici ta pensée...").classes('w-full max-w-xl mb-4')
+        # Zone de saisie
+        question = ui.textarea(
+            label='✍️ Que veux-tu changer aujourd’hui ?',
+            placeholder="Écris ici ta pensée...",
+            validation={'required': False}
+        ).classes('w-full max-w-2xl mb-4 bg-white rounded-lg shadow-inner')
 
-        reponse_label = ui.label().classes('text-xl text-center max-w-xl mt-4 text-blue-700')
+        # Label vide pour afficher la réponse
+        reponse_label = ui.label().classes('text-2xl text-center max-w-2xl mt-4 text-blue-700')
 
+        # Fonction d’analyse de la pensée
         def analyser():
             texte = question.value or ""
-            # Analyse simplifiée du type de pensée
-            if any(mot in texte.lower() for mot in ['le passé', 'les autres', 'la météo', 'mes parents', 'le système']):
+            # Mots-clés hors de contrôle
+            mots_impossibles = ['le passé', 'les autres', 'la météo', 'mes parents', 'le système']
+            if any(mot in texte.lower() for mot in mots_impossibles):
                 reponse_label.text = "❌ Tu ne peux pas le changer. Accepte et adapte-toi avec sérénité. 🌌"
             elif texte.strip() == "":
                 reponse_label.text = "🕊️ Prends un moment pour écrire, même un mot peut être libérateur."
             else:
-                reponse_label.text = "✅ Tu peux probablement agir. Agis avec sagesse et courage. ⚡️"
+                reponse_label.text = "✅ Tu peux probablement agir. Agis avec sagesse et courage ⚡️"
 
-        ui.button("✨ Puis-je le changer ?", on_click=analyser).classes('bg-green-500 text-white rounded-xl px-6 py-2 hover:bg-green-600 shadow')
+        # Bouton d’analyse
+        ui.button(
+            "✨ Puis-je le changer ?",
+            on_click=analyser
+        ).classes('bg-green-600 text-white rounded-2xl px-8 py-3 hover:bg-green-700 shadow-lg')
 
-# Lance l'application localement
-ui.run(title='Simono - Acceptation et Adaptation', reload=False)
+# Démarrage de l’application
+if __name__ == '__main__':
+    # Pour déploiement en ligne, on peut définir HOST et PORT via variables d'environnement
+    host = os.getenv('HOST', '0.0.0.0')
+    port = int(os.getenv('PORT', 8080))
+    ui.run(
+        title='Simono - Acceptation et Adaptation',
+        host=host,
+        port=port,
+        reload=False
+    )
